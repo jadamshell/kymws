@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>KYMWS</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>My ArcGIS Map</title>
+    <style>
+        html, body {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;   
+            flex-direction: column;  
+        }
+        #container1 {
+            height: 175px;  
+            width: 100%;
+            background: linear-gradient(to right, #0033A0, #003FC7);  
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);  
+            display: flex;   
+            justify-content: space-around;   
+            align-items: center;   
+            flex-direction: column;  
+            position: relative;  
+        }
+       
+        #container2 {
+          position: relative;  
+            height: 100%;  
+            width: 100%;
+        }
+        #viewDiv {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .dropdown-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: absolute;
+            top: 5%;
+            right: 40px;  
+        }
+
+        .dropdown-title {
+            color: white;
+            text-shadow: 2px 2px 4px #000000;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        #countySelect {
+            width: 200px; 
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #003FC7;
+            box-shadow: inset 0 0 10px #000000; 
+            color: white;
+            font-size: 18px;
+            outline: none;
+            appearance: none;
+        }
+       
+      #feedback-button {
+    width: 200px; 
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #1962FF;
+    box-shadow: 0 0 10px #000000; 
+    color: white;
+    font-size: 18px;
+    outline: none;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#feedback-button:hover {
+    box-shadow: 0 0 15px #000000; 
+    transform: scale(1.02);
+}
+    #feedback-form {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #FFF;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.15);
+    z-index: 999;
+}
+
+#feedback-form textarea {
+    width: 100%;
+    min-height: 100px;
+    margin-bottom: 10px;
+}
+
+#feedback-form label {
+    margin-bottom: 10px;
+}
+
+#feedback-form #close-form {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+#feedback-form input[type="submit"] {
+    background-color: #0033A0;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+
+.modal {
+  display: none; 
+  position: fixed; 
+  z-index: 1; 
+  padding-top: 100px; 
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  overflow: auto; 
+  background-color: rgb(0,0,0); 
+  background-color: rgba(0,0,0,0.4); 
+}
+
+
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  animation-name: animatetop;
+  animation-duration: 0.4s
+}
+
+
+@keyframes animatetop {
+  from {top:-300px; opacity:0} 
+  to {top:0; opacity:1}
+}
+
+
+.close-button {
+  color: black;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.video-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding-top: 56.25%;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+      
+      
+    </style>
+    <meta charset="utf-8">
+    <title>ArcGIS JavaScript Tutorials: Create a starter app</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="https://js.arcgis.com/4.31/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.31/"></script>
+    <script src="https://unpkg.com/dom-to-image@2.6.0/dist/dom-to-image.min.js"></script>
+</head>
+
+<body>
+    <div id="container1">
+    
+        <div class="dropdown-container">
+            <div class="dropdown-title">Select a County</div>
+            <select id="countySelect"></select>
+          <button id="feedback-button" style="margin-top: 10px;">Submit Feedback</button> 
+        </div>
+    </div>
+   <div id="container2">
+        <div id="viewDiv"></div>
+        <div id="feedback-form" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);">
+            <button id="close-form" style="float: right;">X</button> 
+            <form id="fs-frm" name="survey-form" accept-charset="utf-8" action="https://formspree.io/f/xzbqlwpa" method="post">
+                <label for="message">Application Feedback/Comments</label>
+                <textarea rows="3" name="message" id="message" placeholder="Please Leave comments regarding functionality issues or suggestions for improvement. The staff at KWRRI will review your comments and try to improve the application. Thank you taking the time to provide feedback." required=""></textarea>
+                <input type="hidden" name="_subject" id="email-subject" value="Survey Responses">
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+     <div id="splashModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Welcome to Map My Watershed Tool</h2>
+        <p>The Kentucky Water Resources Research Institute has selected you to try out our new Map My Watershed Tool. The tool is designed to enable users to quickly generate watershed maps for their selected county. The tool does not generate comprehensive hydrologic information; however, it should enable users to see the watersheds (HUC-12s), rivers and streams (NHD 100k), City boundaries, schools, wastewater treatment plants and drinking water treatment plants that fall within the selected County Boundary. Moreover, this service should provide a cursory understanding of how water moves through the watersheds, and communities within the area. You can use it as a digital interactive educational tool, or to print maps for the same purpose. Please take the time to review the application and provide feedback on any suggestions or improvements you would like to see. Please watch the tutorial below prior to use. </p>
+        <p><strong>Known Issues:</strong></p>
+        <ul>
+            <li>You must refresh the page, before selecting a new county selection for the overlay to render on the new selection.</li>
+            <li>Visibility issues with specific elements and labels at certain scales.</li>
+            <li>Print Order issues.</li>
+        </ul>
+        <div class="video-container">
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/b4A6aVaK8lw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+    </div>
+    <div id="legendDiv"></div>
+</body>
+
+
+   <script>
+require([
+    "esri/Map",
+    "esri/views/MapView",
+    "esri/layers/FeatureLayer",
+    "esri/widgets/Legend",
+    "esri/widgets/ScaleBar",
+    "esri/widgets/Expand",
+    "esri/widgets/LayerList",
+    "esri/symbols/PictureMarkerSymbol",
+    "esri/layers/support/LabelClass",
+    "esri/Graphic",
+    "esri/layers/GraphicsLayer",
+    "esri/geometry/geometryEngine",
+    "esri/geometry/Polygon",
+    "esri/widgets/Zoom",
+    "esri/widgets/Print",
+    "esri/layers/VectorTileLayer",
+    "esri/layers/TileLayer"
+], function(Map, MapView, FeatureLayer, Legend, ScaleBar, Expand, LayerList, PictureMarkerSymbol, LabelClass, Graphic, GraphicsLayer, geometryEngine, Polygon, Zoom, Print, VectorTileLayer, TileLayer) {
+  
+  
+var modal = document.getElementById("splashModal");
+
+
+window.onload = function() {
+    modal.style.display = "block";
+}
+
+
+var span = document.getElementsByClassName("close-button")[0];
+
+
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+  
+    
+        var feedbackButton = document.getElementById('feedback-button');
+        var feedbackForm = document.getElementById('feedback-form');
+        var formCloseButton = document.getElementById('close-form');
+
+        
+        feedbackButton.addEventListener('click', function () {
+            feedbackForm.style.display = 'block';
+        });
+
+        
+        formCloseButton.addEventListener('click', function () {
+            feedbackForm.style.display = 'none';
+        });
+
+       
+        feedbackForm.addEventListener('submit', function () {
+            feedbackForm.style.display = 'none';
+        });
+     
+    var osmLayer = new VectorTileLayer({
+        url: "https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer",
+        opacity: 0.9  
+    });
+    var hillshadeLayer = new TileLayer({
+        url: "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer"
+    });
+
+    
+    var map = new Map({
+        basemap: {
+            baseLayers: [hillshadeLayer, osmLayer]
+        }
+    });
+
+    var overlayLayer = new GraphicsLayer();
+    map.add(overlayLayer);
+
+    // create view
+    var view = new MapView({
+        container: "viewDiv",
+        map: map,
+        zoom: 7,
+        center: [-84.5, 37.8] // longitude, latitude
+    });
+       
+     
+var print = new Print({
+    view: view,  
+    printServiceUrl: "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
+});
+
+
+var printExpand = new Expand({
+    view: view,
+    content: print,
+    expanded: false
+});
+      
+
+view.ui.add(printExpand, "top-right");
+
+   
+
+   
+            
+            var schoolSymbol = new PictureMarkerSymbol({
+                url: "https://i.imgur.com/SrXNez9.png",
+                width: "20px",
+                height: "20px"
+            });
+
+          
+            var wttpSymbol = new PictureMarkerSymbol({
+                url: "https://i.imgur.com/ufXnOas.png",
+                width: "25px",
+                height: "25px"
+            });
+
+           
+            var countyLinesLayer = new FeatureLayer({
+                url: "https://services.arcgis.com/vQ8kO5zdqETeirEL/arcgis/rest/services/Ky_County_Lines/FeatureServer",   title: "County Boundary",
+                visible: false,
+              minScale: 0,
+    maxScale: 0, 
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",  
+                        color: [33, 162, 191, 0],
+                        outline: {
+                            color: [173, 115, 9, 0.7],
+                            width: 2.15
+                        }
+                    }
+                }
+            });
+          countyLinesLayer.effect = "brightness(2.0) drop-shadow(2px, 2px, 3px)"
+            
+var hucLabelClass = new LabelClass({
+    labelExpressionInfo: { expression: "$feature.NAME" },
+    symbol: {
+        type: "text",
+        color: [0, 122, 55, 1],
+        haloSize: 1,
+        haloColor: "white",
+        font: {  // autocasts as Font
+            size: 10,
+            family: "sans-serif"
+        },
+        verticalAlignment: "middle"
+    }
+});
+
+
+         
+            var hucLayer = new FeatureLayer({
+                url: "https://services.arcgis.com/vQ8kO5zdqETeirEL/arcgis/rest/services/KYHUC12s/FeatureServer",          title: "Watersheds (HUC-12)",
+                visible: false,
+              minScale: 0,
+    maxScale: 0, 
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill", 
+                        color: [5, 250, 114, 0],
+                        outline: {
+                            color: [0, 173, 77, 0.5],
+                            width: 1.5
+                        
+                        }
+                    }
+                },
+                labelingInfo: [hucLabelClass]
+            });
+hucLayer.effect = "brightness(1.5) drop-shadow(1.5px, 1.5px, 1.5px) bloom(0.1, 0.1px, 15%)"
+            var schLayer = new FeatureLayer({
+                url: "https://services.arcgis.com/vQ8kO5zdqETeirEL/arcgis/rest/services/KY_Sch/FeatureServer",            title: "Schools (K-12)",   
+                visible: false,
+              minScale: 0,
+    maxScale: 0, 
+                renderer: {
+                    type: "simple",  
+                    symbol: schoolSymbol
+                }
+            });
+
+      schLayer.effect = "brightness(1.0) drop-shadow(1.5px, 1.5px, 1.5px)"
+            var wttpLayer = new FeatureLayer({
+                url: "https://services.arcgis.com/vQ8kO5zdqETeirEL/arcgis/rest/services/KYWWTP/FeatureServer",            title: "Wastewater Treatment Plants",
+                visible: false,
+              minScale: 0,
+    maxScale: 0, 
+                renderer: {
+                    type: "simple",  
+                    symbol: wttpSymbol
+                }
+            });
+      wttpLayer.effect = "brightness(1.0) drop-shadow(1.5px, 1.5px, 1.5px)"
+      
+
+var cityLabelClass = new LabelClass({
+    labelExpressionInfo: { expression: "$feature.NAME2" },
+    symbol: {
+        type: "text",
+        color: [255, 49, 31, 1],
+        haloSize: 1,
+        haloColor: "white",
+        font: {  // autocasts as Font
+            size: 10,
+            family: "sans-serif"
+        },
+        verticalAlignment: "middle"
+    }
+});
+           
+var cityBoundariesLayer = new FeatureLayer({
+    url: "https://services.arcgis.com/vQ8kO5zdqETeirEL/arcgis/rest/services/KY_CITY_BOUNDARIES/FeatureServer",
+  title: "City Boundaries",
+    visible: false,  // changed from true to false
+  minScale: 0,
+    maxScale: 0, 
+    renderer: {
+        type: "simple",
+        symbol: {
+            type: "simple-fill",
+            color: [242, 65, 48, 0.1],
+            outline: {
+                color: [255, 49, 31, 1],
+                width: .75
+            }
+        }
+    },
+  labelingInfo: [cityLabelClass]  
+});
+      cityBoundariesLayer.effect = "brightness(1.2) drop-shadow(1px, 1px, 1px) bloom(0.1, 0.1px, 15%)"
+      
+
+var wtpSymbol = new PictureMarkerSymbol({
+    url: "https://i.imgur.com/Rj4JSxT.png",
+    width: "23px",
+    height: "23px"
+});
+
+
+var wtpLayer = new FeatureLayer({
+    url: "https://services.arcgis.com/vQ8kO5zdqETeirEL/arcgis/rest/services/WTP/FeatureServer",title: "Drinking Water Treatment Plants",
+    visible: false,
+  minScale: 0,
+    maxScale: 0, 
+    renderer: {
+        type: "simple",  
+        symbol: wtpSymbol
+    }
+});
+      wtpLayer.effect = "brightness(1.0) drop-shadow(1.5px, 1.5px, 1.5px)"
+
+var waterbodiesLayer = new FeatureLayer({
+    url: "https://kygisserver.ky.gov/arcgis/rest/services/WGS84WM_Services/Ky_Cartobase_WGS84WM/MapServer/14",
+  title: "Waterbodies",
+    visible: false,
+  minScale: 0,
+    maxScale: 0, 
+    renderer: {
+        type: "simple",
+        symbol: {
+            type: "simple-fill",
+            color: [33, 150, 243, 0.9],  
+            outline: {
+                color: [7, 98, 173, 0.9],  
+                width: 1
+            }
+        }
+    }
+});
+waterbodiesLayer.effect = "bloom(0.1, 0.1px, 15%)"
+      
+
+var riversAndStreamsLayer = new FeatureLayer({
+    url: "https://services.arcgis.com/vQ8kO5zdqETeirEL/arcgis/rest/services/NHD_100K_Plus/FeatureServer",
+  title: "Rivers and Streams",
+    visible: false,
+    minScale: 0,
+    maxScale: 0, 
+    renderer: {
+        type: "simple",
+        symbol: {
+            type: "simple-line",  
+            color: [33, 150, 243, 0.4],  
+            width: 1.0
+        }
+    }
+});
+
+      riversAndStreamsLayer.effect = "bloom(0.1, 0.1px, 15%)"
+    
+      var riverBasinsLayer = new FeatureLayer({
+    url: "https://services.arcgis.com/vQ8kO5zdqETeirEL/arcgis/rest/services/Kentucky_River_Basins/FeatureServer",
+    title: "River Basins",
+    visible: false,
+    minScale: 0,
+    maxScale: 0    
+}); 
+
+riverBasinsLayer.renderer = {
+    type: "unique-value",  
+    field: "MGT_UNIT",
+    uniqueValueInfos: [
+    {
+        value: "Kentucky River",
+        symbol: {
+            type: "simple-fill",
+            color: [255, 231, 112, 0.3],
+            style: "solid",
+            outline: {
+                color: [255, 231, 112, 0.6],
+                width: 1
+            }
+        }
+    },
+    {
+        value: "Licking River",
+        symbol: {
+            type: "simple-fill",
+            color: [224, 47, 47, 0.3],
+            style: "solid",
+            outline: {
+                color: [224, 47, 47, 0.6],
+                width: 1
+            }
+        }
+    },
+    {
+        value: "Tradewater and Green River",
+        symbol: {
+            type: "simple-fill",
+            color: [149, 252, 198, 0.3],
+            style: "solid",
+            outline: {
+                color: [149, 252, 198, 0.6],
+                width: 1
+            }
+        }
+    },
+    {
+        value: "Big and Little Sandy River, Tygarts Creek",
+        symbol: {
+            type: "simple-fill",
+            color: [196, 98, 252, 0.3],
+            style: "solid",
+            outline: {
+                color: [196, 98, 252, 0.6],
+                width: 1
+            }
+        }
+    },
+    {
+        value: "Salt River",
+        symbol: {
+            type: "simple-fill",
+            color: [124, 180, 252, 0.3],
+            style: "solid",
+            outline: {
+                color: [124, 180, 252, 0.6],
+                width: 1
+            }
+        }
+    },
+    {
+        value: "Upper Cumberland River",
+        symbol: {
+            type: "simple-fill",
+            color: [250, 182, 55, 0.3],
+            style: "solid",
+            outline: {
+                color: [250, 182, 55, 0.6],
+                width: 1
+            }
+        }
+    },
+    {
+        value: "Four Rivers, Lower Cumberland River",
+        symbol: {
+            type: "simple-fill",
+            color: [252, 149, 217, 0.3],
+            style: "solid",
+            outline: {
+                color: [252, 149, 217, 0.6],
+                width: 1
+            }
+        }
+    }
+    ]
+};
+riverBasinsLayer.effect = "bloom(0.1, 0.1px, 15%)"
+      
+
+map.addMany([riverBasinsLayer, waterbodiesLayer, riversAndStreamsLayer, hucLayer, countyLinesLayer, cityBoundariesLayer, wtpLayer, schLayer, wttpLayer]);
+
+
+            var legend = new Legend({
+    view: view,
+    layerInfos: [{
+        layer: countyLinesLayer,
+        title: "County Boundary"
+    }, {
+        layer: hucLayer,
+        title: "HUC-12"
+    }, {
+        layer: schLayer,
+        title: "Schools - K-12"
+    }, {
+        layer: wttpLayer,
+        title: "Waste Water Treatment Plants"
+    }, {
+        layer: cityBoundariesLayer,
+        title: "City Boundaries"
+    }, {
+        layer: wtpLayer,
+        title: "Drinking Water Treatment Plants"
+    }, {
+        layer: riversAndStreamsLayer,
+        title: "Rivers and Streams"
+    }, {
+        layer: waterbodiesLayer,
+        title: "Waterbodies"
+      }, {
+        layer: riverBasinsLayer,
+        title: "River Basins"
+      
+    }]
+});
+
+           
+
+            // create scale bar
+            var scaleBar = new ScaleBar({
+                view: view
+            });
+
+            view.ui.add(scaleBar, "bottom-left");
+
+          
+
+var layerList = new LayerList({
+    view: view,
+    listItemCreatedFunction: function (event) {
+        const item = event.item;
+        if (item.layer.type !== "group") { // don't show legend twice
+            item.panel = {
+                content: "legend",
+                open: true
+            };
+        }
+    }
+});
+
+
+var layerListExpand = new Expand({
+    view: view,
+    content: layerList,
+    expanded: true 
+});
+
+view.ui.add(layerListExpand, "top-left");
+
+
+      
+            
+            countyLinesLayer.queryFeatures().then(function(results){
+                var select = document.getElementById("countySelect");
+                results.features.forEach(function(feature){
+                    var option = document.createElement("option");
+                    option.value = feature.attributes.NAME;
+                    option.text = feature.attributes.NAME;
+                    select.appendChild(option);
+                });
+
+
+                
+select.addEventListener("change", function() {
+    
+    overlayLayer.removeAll();
+
+    var county = select.value;
+
+    
+    countyLinesLayer.visible = true;
+    hucLayer.visible = true;
+    schLayer.visible = true;
+    wttpLayer.visible = true;
+    cityBoundariesLayer.visible = true;
+    wtpLayer.visible = true;
+    riversAndStreamsLayer.visible = true;
+    waterbodiesLayer.visible = true;
+    riverBasinsLayer.visible = true;
+
+   
+    countyLinesLayer.definitionExpression = "NAME = '" + county + "'";
+    hucLayer.definitionExpression = "COUNTY = '" + county + "'";
+    schLayer.definitionExpression = "CO = '" + county + "'";
+    wttpLayer.definitionExpression = "CO = '" + county + "'";
+    wtpLayer.definitionExpression = "NAME = '" + county + "'";
+    cityBoundariesLayer.definitionExpression = "COUNTY = '" + county + "'";
+
+    
+    var countyQuery = countyLinesLayer.createQuery();
+    countyQuery.where = "NAME = '" + county + "'";
+
+  
+    countyLinesLayer.queryFeatures(countyQuery).then(function(countyResults) {
+        var countyFeature = countyResults.features[0];
+
+        
+        view.goTo(countyFeature.geometry.extent.expand(1.5)).then(function() {
+            
+            var fullMapPolygon = Polygon.fromExtent(view.extent);
+
+            
+            var overlayPolygon = geometryEngine.difference(fullMapPolygon, countyFeature.geometry);
+
+            
+            var overlayGraphic = new Graphic({
+                geometry: overlayPolygon,
+                symbol: {
+                    type: "simple-fill",
+                    color: [0, 0, 0, 0.5],
+                    outline: null
+                }
+            });
+
+            overlayLayer.add(overlayGraphic);
+        });
+    });
+});
+            });
+        });
+    </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
